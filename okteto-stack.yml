@@ -1,0 +1,12 @@
+name: blog
+services:
+  blog:
+    public: true
+    image: okteto.dev/blog
+    build: .
+    replicas: 1
+    ports:
+      - 80
+    resources:
+      cpu: 100m
+      memory: 300Mi

@@ -1,0 +1,78 @@
+#=================================================
+# https://github.com/danxiaonuo/blog
+# Description: Build OpenWrt using GitHub Actions
+# Lisence: MIT
+# Author: danxiaonuo
+# Blog: https://www.danxiaonuo.com
+#=================================================
+
+# 编译的名称
+name: 自动部署okteto
+
+on:
+  repository_dispatch:
+
+# 编辑文件触发开始编译
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/ci.yml'
+
+
+# release发布触发开始编译
+#  release:
+#    types: published
+
+
+# 定时触发开始编译(utc时间)
+  schedule:
+    - cron: '0 2 * * *'
+
+
+# 点☆Star触发开始编译
+  watch:  
+     types: [started]
+     
+# 环境变量
+env:
+   # 源码仓库地址
+   GITHUB_RROJECT: github.com/danxiaonuo/blog.git
+   # 源码分支
+   REPO_BRANCH: master
+     
+
+# 任务集
+jobs:
+  build:
+    # 选择虚拟环境
+    runs-on: ubuntu-latest
+    if: github.event.repository.owner.id == github.event.sender.id
+    
+    # 运行步骤
+    steps:
+    
+    # 准备完毕
+    - name: "准备完毕"
+      uses: actions/checkout@v2
+    
+    # 克隆源码
+    - name: "克隆源码"
+      run: |
+        git clone --depth 1 https://${{ secrets.RELEASE_TOKEN }}@$GITHUB_RROJECT -b $REPO_BRANCH blog
+        cd blog && git submodule update --init --recursive
+       
+    - name: "登录okteto"
+      uses: okteto/login@master
+      with:
+        token: ${{ secrets.OKTETO_TOKEN }}
+    
+    - name: "激活命名空间"
+      uses: okteto/namespace@master
+      with:
+        name: danxiaonuo
+
+    - name: "创建 stack"
+      uses: okteto/deploy-stack@master
+      with:
+        build: "true"

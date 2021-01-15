@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: blog
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: blog
+  template:
+    metadata:
+      labels:
+        app: blog
+    spec:
+      containers:
+      - image: okteto.dev/blog
+        name: blog
+        resources:
+        limits:
+          cpu: "100m"
+          memory: "300Mi"
+        ports:
+        - containerPort: 80
